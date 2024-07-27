@@ -51,6 +51,13 @@
         <p>En als het werk gedaan is ruimen we alles op.</p>
         <p>Houd rekening met €500,-</p>
         <button type="button" onclick="alert('+31684074565')">Telefoon</button>
+        <p></p>
+        <p></p>
+        <form action="send_mail.php" method="post" enctype="multipart/form-data">
+            <label for="photo">Klus Beeld</label>
+            <input type="file" name="photo" id="photo" accept="image/*" capture>
+            <button type="submit" name="sendEmail">Send Email</button>
+        </form>
     </div>
 </body>
 </html>
