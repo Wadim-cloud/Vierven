@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=0.855">
-    <title>Infinite Scrolling Background</title>
+    <title>Appointment Scheduler</title>
     <style>
         body, html {
             margin: 0;
@@ -39,6 +39,30 @@
             background: rgba(255, 255, 255, 0.8);
             padding: 20px;
         }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        input, button {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 <body>
@@ -51,13 +75,103 @@
         <p>En als het werk gedaan is ruimen we alles op.</p>
         <p>Houd rekening met €500,-</p>
         <button type="button" onclick="alert('+31684074565')">Telefoon</button>
-        <p></p>
-        <p></p>
-        <!-- <form action="https://truffletech.osiris.devhost.io/send_mail.php" method="post" enctype="multipart/form-data">
-            <label for="photo">Klus Beeld</label>
-            <input type="file" name="photo" id="photo" accept="image/*" capture>
-            <button type="submit" name="sendEmail">Send Email</button>
-        </form> -->
+
+        <!-- Appointment Scheduler -->
+        <h2>Appointment Scheduler</h2>
+        <form id="appointment-form">
+            <label for="title">Title:</label>
+            <input type="text" name="title" id="title" required>
+            <label for="description">Description:</label>
+            <input type="text" name="description" id="description">
+            <label for="start_time">Start Time:</label>
+            <input type="datetime-local" name="start_time" id="start_time" required>
+            <label for="end_time">End Time:</label>
+            <input type="datetime-local" name="end_time" id="end_time" required>
+            <button type="submit">Add Appointment</button>
+        </form>
+
+        <!-- Display Appointments -->
+        <h3>Upcoming Appointments</h3>
+        <table id="appointments-table">
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </table>
     </div>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js"></script>
+
+    <script>
+        // Your web app's Firebase configuration
+        // Replace the following with your own Firebase project's config
+        const firebaseConfig = {
+  apiKey: "AIzaSyDTQVW4C0rvvbMR3W-Qngs4CN_lWUCN8cY",
+  authDomain: "vierven-3a1e7.firebaseapp.com",
+  projectId: "vierven-3a1e7",
+  storageBucket: "vierven-3a1e7.appspot.com",
+  messagingSenderId: "1090091726443",
+  appId: "1:1090091726443:web:431c6144315e4a75e7632e",
+  measurementId: "G-V648QF4S82"
+};
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Initialize Firestore
+        const db = firebase.firestore();
+
+        // Function to add an appointment
+        document.getElementById('appointment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const startTime = document.getElementById('start_time').value;
+            const endTime = document.getElementById('end_time').value;
+
+            await db.collection('appointments').add({
+                title: title,
+                description: description,
+                start_time: startTime,
+                end_time: endTime,
+                created_at: new Date().toISOString()
+            });
+
+            document.getElementById('appointment-form').reset();
+            loadAppointments();
+        });
+
+        // Function to load and display appointments
+        async function loadAppointments() {
+            const table = document.getElementById('appointments-table');
+            table.innerHTML = `
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                </tr>
+            `;
+
+            const snapshot = await db.collection('appointments').orderBy('start_time').get();
+            snapshot.forEach(doc => {
+                const appointment = doc.data();
+                const row = table.insertRow();
+                row.insertCell(0).innerText = appointment.title;
+                row.insertCell(1).innerText = appointment.description;
+                row.insertCell(2).innerText = new Date(appointment.start_time).toLocaleString();
+                row.insertCell(3).innerText = new Date(appointment.end_time).toLocaleString();
+            });
+        }
+
+        // Load appointments on page load
+        window.onload = loadAppointments;
+    </script>
 </body>
 </html>
