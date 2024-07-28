@@ -76,11 +76,6 @@
         <p>Houd rekening met €500,-</p>
         <button type="button" onclick="alert('+31684074565')">Telefoon</button>
 
-        <!-- Firebase Project Selector -->
-        <h2>Select Firebase Project</h2>
-        <button type="button" onclick="setFirebaseConfig('vierven')">Vierven</button>
-        <button type="button" onclick="setFirebaseConfig('pros')">Pros</button>
-
         <!-- Appointment Scheduler -->
         <h2>Appointment Scheduler</h2>
         <form id="appointment-form">
@@ -120,43 +115,40 @@
         import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js";
 
-        let firebaseConfig;
-        let app;
-        let db;
-        let storage;
-
-        const firebaseConfigs = {
-            vierven: {
-                apiKey: "private",
-                authDomain: "vierven-35def.firebaseapp.com",
-                projectId: "vierven-35def",
-                storageBucket: "vierven-35def.appspot.com",
-                messagingSenderId: "301018782509",
-                appId: "1:301018782509:web:2ee0c6b723f08b75b691a4",
-                measurementId: "G-S7PEPBBJT8"
-            },
-            pros: {
-                apiKey: "AIzaSyDj9jveAfZTrn0SKNpCD02NMAxtjGjfhiU",
-                authDomain: "pros-48631.firebaseapp.com",
-                projectId: "pros-48631",
-                storageBucket: "pros-48631.appspot.com",
-                messagingSenderId: "314909182040",
-                appId: "1:314909182040:web:5c8b3f2f980aa9fb4de22d",
-                measurementId: "G-D4SXCZLFNP"
-            }
+        // Firebase configuration for Vierven project
+        const viervenConfig = {
+            apiKey: "private",
+            authDomain: "vierven-35def.firebaseapp.com",
+            projectId: "vierven-35def",
+            storageBucket: "vierven-35def.appspot.com",
+            messagingSenderId: "301018782509",
+            appId: "1:301018782509:web:2ee0c6b723f08b75b691a4",
+            measurementId: "G-S7PEPBBJT8"
         };
 
-        function setFirebaseConfig(project) {
-            firebaseConfig = firebaseConfigs[project];
-            initializeFirebase();
-            loadAppointments();
-        }
+        // Firebase configuration for Pros project
+        const prosConfig = {
+            apiKey: "AIzaSyDj9jveAfZTrn0SKNpCD02NMAxtjGjfhiU",
+            authDomain: "pros-48631.firebaseapp.com",
+            projectId: "pros-48631",
+            storageBucket: "pros-48631.appspot.com",
+            messagingSenderId: "314909182040",
+            appId: "1:314909182040:web:5c8b3f2f980aa9fb4de22d",
+            measurementId: "G-D4SXCZLFNP"
+        };
+
+        let viervenApp, viervenDb;
+        let prosApp, prosStorage;
 
         function initializeFirebase() {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            storage = getStorage(app);
+            viervenApp = initializeApp(viervenConfig, 'viervenApp');
+            viervenDb = getFirestore(viervenApp);
+
+            prosApp = initializeApp(prosConfig, 'prosApp');
+            prosStorage = getStorage(prosApp);
         }
+
+        initializeFirebase();
 
         document.getElementById('appointment-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -166,7 +158,7 @@
             const startTime = document.getElementById('start_time').value;
             const endTime = document.getElementById('end_time').value;
 
-            await addDoc(collection(db, 'appointments'), {
+            await addDoc(collection(viervenDb, 'appointments'), {
                 title: title,
                 description: description,
                 start_time: startTime,
@@ -184,7 +176,7 @@
             const file = document.getElementById('image').files[0];
             if (!file) return;
 
-            const storageRef = ref(storage, 'images/' + file.name);
+            const storageRef = ref(prosStorage, 'images/' + file.name);
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
 
@@ -204,7 +196,7 @@
                 </tr>
             `;
 
-            const q = query(collection(db, 'appointments'), orderBy('start_time'));
+            const q = query(collection(viervenDb, 'appointments'), orderBy('start_time'));
             const snapshot = await getDocs(q);
             snapshot.forEach(doc => {
                 const appointment = doc.data();
@@ -216,9 +208,7 @@
             });
         }
 
-        window.onload = () => {
-            setFirebaseConfig('vierven');
-        };
+        window.onload = loadAppointments;
     </script>
 </body>
 </html>
