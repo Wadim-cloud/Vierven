@@ -5,111 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=0.855">
     <title>Appointment Scheduler</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-        }
-
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('Screenshot 2024-07-20 at 05.56.13.png') repeat-y center center fixed;
-            background-size: cover;
-            animation: scrollBackground 10s linear infinite;
-            z-index: -1;
-        }
-
-        @keyframes scrollBackground {
-            from {
-                transform: translateY(0);
-            }
-            to {
-                transform: translateY(-50%);
-            }
-        }
-
-        .content {
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 20px;
-        }
-
-        form {
-            margin-bottom: 20px;
-        }
-
-        input, button {
-            display: block;
-            margin: 10px 0;
-            padding: 10px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
+        /* Your CSS styling */
     </style>
 </head>
 <body>
-    <div class="background"></div>
-    <div class="content">
-        <h1>Vierven™</h1>
-        <p>We bewegen onze polsen aan de hand van een kwast en een oppervlak</p>
-        <p>Het licht geeft ons werk een tint</p>
-        <p>Smaken, kleuren en geuren</p>
-        <p>En als het werk gedaan is ruimen we alles op.</p>
-        <p>Houd rekening met €500,-</p>
-        <button type="button" onclick="alert('+31684074565')">Telefoon</button>
-
-        <!-- Appointment Scheduler -->
-        <h2>Appointment Scheduler</h2>
-        <form id="appointment-form">
-            <label for="title">Title:</label>
-            <input type="text" name="title" id="title" required>
-            <label for="description">Description:</label>
-            <input type="text" name="description" id="description">
-            <label for="start_time">Start Time:</label>
-            <input type="datetime-local" name="start_time" id="start_time" required>
-            <label for="end_time">End Time:</label>
-            <input type="datetime-local" name="end_time" id="end_time" required>
-            <button type="submit">Add Appointment</button>
-        </form>
-
-        <!-- Image Upload -->
-        <h2>Upload Image to Pros Storage</h2>
-        <form id="image-upload-form">
-            <label for="image">Choose Image:</label>
-            <input type="file" name="image" id="image" accept="image/*" required>
-            <button type="submit">Upload Image</button>
-        </form>
-
-        <!-- Display Appointments -->
-        <h3>Upcoming Appointments</h3>
-        <table id="appointments-table">
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Start Time</th>
-                <th>End Time</th>
-            </tr>
-        </table>
-    </div>
-
+    <!-- Your HTML content -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
@@ -118,12 +18,12 @@
 
         // Firebase configuration for Vierven project
         const viervenConfig = {
-            apiKey: "private",
+            apiKey: "YOUR_VIERVEN_API_KEY",
             authDomain: "vierven-35def.firebaseapp.com",
             projectId: "vierven-35def",
             storageBucket: "vierven-35def.appspot.com",
             messagingSenderId: "301018782509",
-            appId: "1:301018782509:web:2ee0c6b723f08b75b691a4",
+            appId: "YOUR_VIERVEN_APP_ID",
             measurementId: "G-S7PEPBBJT8"
         };
 
@@ -134,7 +34,7 @@
             projectId: "pros-48631",
             storageBucket: "pros-48631.appspot.com",
             messagingSenderId: "314909182040",
-            appId: "1:314909182040:web:5c8b3f2f980aa9fb4de22d",
+            appId: "YOUR_PROS_APP_ID",
             measurementId: "G-D4SXCZLFNP"
         };
 
