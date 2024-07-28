@@ -114,6 +114,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
         // Firebase configuration for Vierven project
         const viervenConfig = {
@@ -138,7 +139,7 @@
         };
 
         let viervenApp, viervenDb;
-        let prosApp, prosStorage;
+        let prosApp, prosStorage, auth;
 
         function initializeFirebase() {
             viervenApp = initializeApp(viervenConfig, 'viervenApp');
@@ -146,9 +147,23 @@
 
             prosApp = initializeApp(prosConfig, 'prosApp');
             prosStorage = getStorage(prosApp);
+            auth = getAuth(prosApp);
         }
 
         initializeFirebase();
+
+        // Ensure the user is authenticated before uploading
+        signInAnonymously(auth).catch(error => {
+            console.error('Error during anonymous sign-in:', error);
+        });
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                console.log('User signed in:', user);
+            } else {
+                console.error('User is signed out');
+            }
+        });
 
         document.getElementById('appointment-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -174,13 +189,21 @@
             e.preventDefault();
 
             const file = document.getElementById('image').files[0];
-            if (!file) return;
+            if (!file) {
+                console.error("No file selected for upload");
+                return;
+            }
 
-            const storageRef = ref(prosStorage, 'images/' + file.name);
-            await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(storageRef);
-
-            alert('Image uploaded successfully! URL: ' + url);
+            try {
+                const storageRef = ref(prosStorage, 'images/' + file.name);
+                await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(storageRef);
+                console.log('Image uploaded successfully! URL:', url);
+                alert('Image uploaded successfully! URL: ' + url);
+            } catch (error) {
+                console.error("Error uploading image:", error);
+                alert('Failed to upload image. Check the console for errors.');
+            }
 
             document.getElementById('image-upload-form').reset();
         });
@@ -196,16 +219,20 @@
                 </tr>
             `;
 
-            const q = query(collection(viervenDb, 'appointments'), orderBy('start_time'));
-            const snapshot = await getDocs(q);
-            snapshot.forEach(doc => {
-                const appointment = doc.data();
-                const row = table.insertRow();
-                row.insertCell(0).innerText = appointment.title;
-                row.insertCell(1).innerText = appointment.description;
-                row.insertCell(2).innerText = new Date(appointment.start_time).toLocaleString();
-                row.insertCell(3).innerText = new Date(appointment.end_time).toLocaleString();
-            });
+            try {
+                const q = query(collection(viervenDb, 'appointments'), orderBy('start_time'));
+                const snapshot = await getDocs(q);
+                snapshot.forEach(doc => {
+                    const appointment = doc.data();
+                    const row = table.insertRow();
+                    row.insertCell(0).innerText = appointment.title;
+                    row.insertCell(1).innerText = appointment.description;
+                    row.insertCell(2).innerText = new Date(appointment.start_time).toLocaleString();
+                    row.insertCell(3).innerText = new Date(appointment.end_time).toLocaleString();
+                });
+            } catch (error) {
+                console.error("Error loading appointments:", error);
+            }
         }
 
         window.onload = loadAppointments;
