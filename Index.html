@@ -9,18 +9,18 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            overflow: hidden;
         }
 
         .background {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 200%;
+            height: 100%;
             background: url('Screenshot 2024-07-20 at 05.56.13.png') repeat-y center center fixed;
             background-size: cover;
             animation: scrollBackground 10s linear infinite;
+            z-index: -1;
         }
 
         @keyframes scrollBackground {
@@ -95,6 +95,14 @@
             <button type="submit">Add Appointment</button>
         </form>
 
+        <!-- Image Upload -->
+        <h2>Upload Image to Pros Storage</h2>
+        <form id="image-upload-form">
+            <label for="image">Choose Image:</label>
+            <input type="file" name="image" id="image" accept="image/*" required>
+            <button type="submit">Upload Image</button>
+        </form>
+
         <!-- Display Appointments -->
         <h3>Upcoming Appointments</h3>
         <table id="appointments-table">
@@ -110,10 +118,12 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js";
 
         let firebaseConfig;
         let app;
         let db;
+        let storage;
 
         const firebaseConfigs = {
             vierven: {
@@ -145,6 +155,7 @@
         function initializeFirebase() {
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
+            storage = getStorage(app);
         }
 
         document.getElementById('appointment-form').addEventListener('submit', async (e) => {
@@ -165,6 +176,21 @@
 
             document.getElementById('appointment-form').reset();
             loadAppointments();
+        });
+
+        document.getElementById('image-upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const file = document.getElementById('image').files[0];
+            if (!file) return;
+
+            const storageRef = ref(storage, 'images/' + file.name);
+            await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(storageRef);
+
+            alert('Image uploaded successfully! URL: ' + url);
+
+            document.getElementById('image-upload-form').reset();
         });
 
         async function loadAppointments() {
