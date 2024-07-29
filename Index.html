@@ -106,15 +106,18 @@
                 <th>Description</th>
                 <th>Start Time</th>
                 <th>End Time</th>
+                <th>Confirmed</th>
+                <th>Created At</th>
+                <th>Confirm</th>
             </tr>
         </table>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+        import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
         // Firebase configuration for Vierven project
         const viervenConfig = {
@@ -141,29 +144,28 @@
         let viervenApp, viervenDb;
         let prosApp, prosStorage, auth;
 
-        function initializeFirebase() {
+        async function initializeFirebase() {
             viervenApp = initializeApp(viervenConfig, 'viervenApp');
             viervenDb = getFirestore(viervenApp);
 
             prosApp = initializeApp(prosConfig, 'prosApp');
             prosStorage = getStorage(prosApp);
             auth = getAuth(prosApp);
+
+            // Fetch custom token using CORS proxy
+            try {
+                const response = await fetch('https://cors-anywhere.herokuapp.com/https://truffletech.osiris.devhost.io/tokens/token.json');
+                const data = await response.json();
+                const customToken = data.token;
+
+                await signInWithCustomToken(auth, customToken);
+                console.log('Signed in with custom token');
+            } catch (error) {
+                console.error('Error signing in with custom token:', error);
+            }
         }
 
         initializeFirebase();
-
-        // Ensure the user is authenticated before uploading
-        signInAnonymously(auth).catch(error => {
-            console.error('Error during anonymous sign-in:', error);
-        });
-
-        onAuthStateChanged(auth, user => {
-            if (user) {
-                console.log('User signed in:', user);
-            } else {
-                console.error('User is signed out');
-            }
-        });
 
         document.getElementById('appointment-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -173,16 +175,21 @@
             const startTime = document.getElementById('start_time').value;
             const endTime = document.getElementById('end_time').value;
 
-            await addDoc(collection(viervenDb, 'appointments'), {
-                title: title,
-                description: description,
-                start_time: startTime,
-                end_time: endTime,
-                created_at: new Date().toISOString()
-            });
+            try {
+                await addDoc(collection(viervenDb, 'appointments'), {
+                    title: title,
+                    description: description,
+                    start_time: startTime,
+                    end_time: endTime,
+                    confirmed: false,
+                    created_at: new Date().toISOString()
+                });
 
-            document.getElementById('appointment-form').reset();
-            loadAppointments();
+                document.getElementById('appointment-form').reset();
+                loadAppointments();
+            } catch (error) {
+                console.error('Error adding appointment:', error);
+            }
         });
 
         document.getElementById('image-upload-form').addEventListener('submit', async (e) => {
@@ -221,6 +228,9 @@
                     <th>Description</th>
                     <th>Start Time</th>
                     <th>End Time</th>
+                    <th>Confirmed</th>
+                    <th>Created At</th>
+                    <th>Confirm</th>
                 </tr>
             `;
 
@@ -234,6 +244,18 @@
                     row.insertCell(1).innerText = appointment.description;
                     row.insertCell(2).innerText = new Date(appointment.start_time).toLocaleString();
                     row.insertCell(3).innerText = new Date(appointment.end_time).toLocaleString();
+                    row.insertCell(4).innerText = appointment.confirmed ? 'Yes' : 'No';
+                    row.insertCell(5).innerText = new Date(appointment.created_at).toLocaleString();
+                    const confirmCell = row.insertCell(6);
+                    if (!appointment.confirmed) {
+                        const confirmButton = document.createElement('button');
+                        confirmButton.innerText = 'Confirm';
+                        confirmButton.onclick = async () => {
+                            await updateDoc(doc(viervenDb, 'appointments', doc.id), { confirmed: true });
+                            loadAppointments();
+                        };
+                        confirmCell.appendChild(confirmButton);
+                    }
                 });
             } catch (error) {
                 console.error("Error loading appointments:", error);
