@@ -5,8 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=0.855">
     <title>Appointment Scheduler</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            position: relative; /* To position the carousel in the top-right corner */
+        }
+        .carousel-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 41px;
+            height: 100px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 2px solid #000; /* Border to match the rest of the frames */
+            background-color: #fff; /* Background color for contrast */
+        }
+        .carousel {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .carousel img {
+            width: 41px;
+            height: 100px;
+            object-fit: cover;
+        }
+        .frames-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .random-frame, .timed-frame {
+            width: 41px;
+            height: 41px;
+            border: 2px solid #000;
+            overflow: hidden;
+            background-color: #fff;
+            margin-bottom: 10px; /* Spacing between the two frames */
+        }
+        .random-frame img, .timed-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .reshuffle-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+        .reshuffle-button:hover {
+            background-color: #0056b3;
+        }
+        /* Green tint effect */
+        .green-tint {
+            filter: hue-rotate(90deg) saturate(2);
+        }
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('background-image.jpg') no-repeat center center fixed; /* Example background image */
+            background-size: cover;
+            z-index: -1;
+        }
+        .content {
+            z-index: 1;
+        }
+    </style>
 </head>
 <body>
+
     <div class="background"></div>
     <div class="content">
         <h1>Vierven™</h1>
@@ -49,6 +137,25 @@
                 <th>End Time</th>
             </tr>
         </table>
+    </div>
+
+    <div class="carousel-container" id="carousel-container">
+        <div class="carousel" id="carousel">
+            <!-- Images will be inserted here by JavaScript -->
+        </div>
+    </div>
+
+    <div class="frames-container">
+        <div class="random-frame" id="random-frame">
+            <img id="random-image" alt="Random Image">
+        </div>
+        <div class="timed-frame" id="timed-frame">
+            <img id="timed-image" alt="Timed Image">
+        </div>
+    </div>
+
+    <div class="button-container">
+        <button class="reshuffle-button" onclick="reshuffleRandomImage()">Reshuffle</button>
     </div>
 
     <script type="module">
@@ -181,7 +288,93 @@
             }
         }
 
+        // Carousel logic
+        const images = [
+            'canvas1.png',
+            'canvas2.png',
+            'canvas3.png',
+            'canvas4.png'
+        ];
+
+        const carousel = document.getElementById('carousel');
+        const randomImage = document.getElementById('random-image');
+        const timedImage = document.getElementById('timed-image');
+        const carouselContainer = document.getElementById('carousel-container');
+        const randomFrame = document.getElementById('random-frame');
+        const timedFrame = document.getElementById('timed-frame');
+        let currentIndex = 0;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+            }
+        }
+
+        function populateCarousel() {
+            shuffleArray(images); // Shuffle images before adding to carousel
+            images.forEach(image => {
+                const img = document.createElement('img');
+                img.src = image;
+                img.alt = 'Carousel Image';
+                carousel.appendChild(img);
+            });
+        }
+
+        function showNextImage() {
+            currentIndex = (currentIndex + 1) % images.length;
+            carousel.style.transform = `translateX(-${currentIndex * 41}px)`; // Updated to 41px width
+        }
+
+        function updateRandomImage() {
+            const randomIndex = Math.floor(Math.random() * images.length);
+            randomImage.src = images[randomIndex];
+        }
+
+        function updateTimedImage() {
+            const timedIndex = Math.floor(Math.random() * images.length);
+            timedImage.src = images[timedIndex];
+        }
+
+        function reshuffleRandomImage() {
+            updateRandomImage(); // Update the random image when reshuffle button is clicked
+        }
+
+        function applyGreenTint() {
+            // Remove green tint from all frames
+            carouselContainer.classList.remove('green-tint');
+            randomFrame.classList.remove('green-tint');
+            timedFrame.classList.remove('green-tint');
+
+            // Randomly select one of the three frames to apply the green tint
+            const randomFrameToTint = Math.floor(Math.random() * 3);
+            switch (randomFrameToTint) {
+                case 0:
+                    carouselContainer.classList.add('green-tint');
+                    break;
+                case 1:
+                    randomFrame.classList.add('green-tint');
+                    break;
+                case 2:
+                    timedFrame.classList.add('green-tint');
+                    break;
+            }
+        }
+
+        // Initialize the carousel
+        populateCarousel();
+        showNextImage();
+        updateRandomImage();
+        updateTimedImage();
+
+        // Set intervals for automatic transitions
+        setInterval(showNextImage, 2000); // Change carousel image every 2 seconds
+        setInterval(updateRandomImage, 2000); // Update random image every 2 seconds
+        setInterval(updateTimedImage, 10000); // Update timed image every 10 seconds
+        setInterval(applyGreenTint, 15000); // Apply green tint to a random frame every 15 seconds
+
         window.onload = loadAppointments;
     </script>
+
 </body>
 </html>
