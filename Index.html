@@ -4,40 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=0.855">
     <title>Appointment Scheduler</title>
-    <style>
-        /* Your CSS styling */
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Your HTML content -->
+    <div class="background"></div>
+    <div class="content">
+        <h1>Vierven™</h1>
+        <p>We bewegen onze polsen aan de hand van een kwast en een oppervlak</p>
+        <p>Het licht geeft ons werk een tint</p>
+        <p>Smaken, kleuren en geuren</p>
+        <p>En als het werk gedaan is ruimen we alles op.</p>
+        <p>Houd rekening met €500,-</p>
+        <button type="button" onclick="alert('+31684074565')">Telefoon</button>
 
-    <form id="appointment-form">
-        <label for="title">Title:</label>
-        <input type="text" name="title" id="title" required>
-        <label for="description">Description:</label>
-        <input type="text" name="description" id="description">
-        <label for="start_time">Start Time:</label>
-        <input type="datetime-local" name="start_time" id="start_time" required>
-        <label for="end_time">End Time:</label>
-        <input type="datetime-local" name="end_time" id="end_time" required>
-        <button type="submit">Add Appointment</button>
-    </form>
+        <!-- Appointment Scheduler -->
+        <h2>Appointment Scheduler</h2>
+        <form id="appointment-form">
+            <label for="title">Title:</label>
+            <input type="text" name="title" id="title" required>
+            <label for="description">Description:</label>
+            <input type="text" name="description" id="description">
+            <label for="start_time">Start Time:</label>
+            <input type="datetime-local" name="start_time" id="start_time" required>
+            <label for="end_time">End Time:</label>
+            <input type="datetime-local" name="end_time" id="end_time" required>
+            <button type="submit">Add Appointment</button>
+        </form>
 
-    <form id="image-upload-form">
-        <label for="image">Upload Image:</label>
-        <input type="file" id="image" accept="image/*" required>
-        <button type="submit">Upload Image</button>
-    </form>
+        <!-- Image Upload -->
+        <h2>Upload Image to Pros Storage</h2>
+        <form id="image-upload-form">
+            <label for="image">Choose Image:</label>
+            <input type="file" name="image" id="image" accept="image/*" required>
+            <button type="submit">Upload Image</button>
+        </form>
 
-    <h3>Upcoming Appointments</h3>
-    <table id="appointments-table">
-        <tr>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-        </tr>
-    </table>
+        <!-- Display Appointments -->
+        <h3>Upcoming Appointments</h3>
+        <table id="appointments-table">
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </table>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
@@ -47,7 +59,7 @@
 
         // Firebase configuration for Vierven project
         const viervenConfig = {
-            apiKey: "AIzaSyCWLHVHlMV0WfKIu_p2mlOMNcHJ3823-P4",
+            apiKey: "private",
             authDomain: "vierven-35def.firebaseapp.com",
             projectId: "vierven-35def",
             storageBucket: "vierven-35def.appspot.com",
@@ -70,7 +82,6 @@
         let viervenApp, viervenDb;
         let prosApp, prosStorage, auth;
 
-        // Initialize Firebase
         function initializeFirebase() {
             viervenApp = initializeApp(viervenConfig, 'viervenApp');
             viervenDb = getFirestore(viervenApp);
@@ -80,17 +91,69 @@
             auth = getAuth(prosApp);
         }
 
-        // Sign in anonymously
-        async function authenticate() {
-            try {
-                await signInAnonymously(auth);
-                console.log('User signed in');
-            } catch (error) {
-                console.error('Error during anonymous sign-in:', error);
-            }
-        }
+        initializeFirebase();
 
-        // Load appointments from Firestore
+        // Ensure the user is authenticated before uploading
+        signInAnonymously(auth).catch(error => {
+            console.error('Error during anonymous sign-in:', error);
+        });
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                console.log('User signed in:', user);
+            } else {
+                console.error('User is signed out');
+            }
+        });
+
+        document.getElementById('appointment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const startTime = document.getElementById('start_time').value;
+            const endTime = document.getElementById('end_time').value;
+
+            await addDoc(collection(viervenDb, 'appointments'), {
+                title: title,
+                description: description,
+                start_time: startTime,
+                end_time: endTime,
+                created_at: new Date().toISOString()
+            });
+
+            document.getElementById('appointment-form').reset();
+            loadAppointments();
+        });
+
+        document.getElementById('image-upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const file = document.getElementById('image').files[0];
+            if (!file) {
+                console.error("No file selected for upload");
+                return;
+            }
+
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    throw new Error('User not authenticated');
+                }
+
+                const storageRef = ref(prosStorage, 'images/' + file.name);
+                await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(storageRef);
+                console.log('Image uploaded successfully! URL:', url);
+                alert('Image uploaded successfully! URL: ' + url);
+            } catch (error) {
+                console.error("Error uploading image:", error);
+                alert('Failed to upload image. Check the console for errors.');
+            }
+
+            document.getElementById('image-upload-form').reset();
+        });
+
         async function loadAppointments() {
             const table = document.getElementById('appointments-table');
             table.innerHTML = `
@@ -118,72 +181,7 @@
             }
         }
 
-        // Handle appointment form submission
-        function handleAppointmentFormSubmit() {
-            document.getElementById('appointment-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const title = document.getElementById('title').value;
-                const description = document.getElementById('description').value;
-                const startTime = document.getElementById('start_time').value;
-                const endTime = document.getElementById('end_time').value;
-
-                try {
-                    await addDoc(collection(viervenDb, 'appointments'), {
-                        title: title,
-                        description: description,
-                        start_time: startTime,
-                        end_time: endTime,
-                        created_at: new Date().toISOString()
-                    });
-
-                    document.getElementById('appointment-form').reset();
-                    loadAppointments();
-                } catch (error) {
-                    console.error("Error adding appointment:", error);
-                }
-            });
-        }
-
-        // Handle image upload form submission
-        function handleImageUploadFormSubmit() {
-            document.getElementById('image-upload-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const file = document.getElementById('image').files[0];
-                if (!file) {
-                    console.error("No file selected for upload");
-                    return;
-                }
-
-                try {
-                    const user = auth.currentUser;
-                    if (!user) {
-                        throw new Error('User not authenticated');
-                    }
-
-                    const storageRef = ref(prosStorage, 'images/' + file.name);
-                    await uploadBytes(storageRef, file);
-                    const url = await getDownloadURL(storageRef);
-                    console.log('Image uploaded successfully! URL:', url);
-                    alert('Image uploaded successfully! URL: ' + url);
-                } catch (error) {
-                    console.error("Error uploading image:", error);
-                    alert('Failed to upload image. Check the console for errors.');
-                }
-
-                document.getElementById('image-upload-form').reset();
-            });
-        }
-
-        // Initialize app and set up event listeners on DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeFirebase();
-            authenticate();
-            handleAppointmentFormSubmit();
-            handleImageUploadFormSubmit();
-            loadAppointments();
-        });
+        window.onload = loadAppointments;
     </script>
 </body>
 </html>

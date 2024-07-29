@@ -1,0 +1,58 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('Screenshot 2024-07-20 at 05.56.13.png') repeat-y center center fixed;
+    background-size: cover;
+    animation: scrollBackground 10s linear infinite;
+    z-index: -1;
+}
+
+@keyframes scrollBackground {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(-50%);
+    }
+}
+
+.content {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+input, button {
+    display: block;
+    margin: 10px 0;
+    padding: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+th {
+    background-color: #f2f2f2;
+}
