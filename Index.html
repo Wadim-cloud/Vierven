@@ -118,15 +118,16 @@
                 <th>Confirmed</th>
                 <th>Created At</th>
                 <th>Confirm</th>
+                <th>Delete</th>
             </tr>
         </table>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js";
-        import { getAuth, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
         // Firebase configuration for Vierven project
         const viervenConfig = {
@@ -161,18 +162,7 @@
             prosStorage = getStorage(prosApp);
             auth = getAuth(prosApp);
 
-            // Fetch custom token using CORS proxy
-            try {
-                const response = await fetch('https://cors-anywhere.herokuapp.com/https://truffletech.osiris.devhost.io/tokens/token.json');
-                const data = await response.json();
-                const customToken = data.token;
-
-                await signInWithCustomToken(auth, customToken);
-                console.log('Signed in with custom token');
-                loadImages();  // Load images after authentication
-            } catch (error) {
-                console.error('Error signing in with custom token:', error);
-            }
+            loadImages();  // Load images directly without token handling
         }
 
         initializeFirebase();
@@ -242,6 +232,7 @@
                     <th>Confirmed</th>
                     <th>Created At</th>
                     <th>Confirm</th>
+                    <th>Delete</th>
                 </tr>
             `;
 
@@ -257,6 +248,8 @@
                     row.insertCell(3).innerText = new Date(appointment.end_time).toLocaleString();
                     row.insertCell(4).innerText = appointment.confirmed ? 'Yes' : 'No';
                     row.insertCell(5).innerText = new Date(appointment.created_at).toLocaleString();
+
+                    // Confirm Button
                     const confirmCell = row.insertCell(6);
                     if (!appointment.confirmed) {
                         const confirmButton = document.createElement('button');
@@ -267,6 +260,18 @@
                         };
                         confirmCell.appendChild(confirmButton);
                     }
+
+                    // Delete Button
+                    const deleteCell = row.insertCell(7);
+                    const deleteButton = document.createElement('button');
+                    deleteButton.innerText = 'Delete';
+                    deleteButton.onclick = async () => {
+                        if (confirm('Are you sure you want to delete this appointment?')) {
+                            await deleteDoc(doc(viervenDb, 'appointments', doc.id));
+                            loadAppointments();
+                        }
+                    };
+                    deleteCell.appendChild(deleteButton);
                 });
             } catch (error) {
                 console.error("Error loading appointments:", error);
