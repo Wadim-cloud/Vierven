@@ -118,14 +118,13 @@
                 <th>Confirmed</th>
                 <th>Created At</th>
                 <th>Confirm</th>
-                <th>Delete</th>
             </tr>
         </table>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
@@ -232,7 +231,6 @@
                     <th>Confirmed</th>
                     <th>Created At</th>
                     <th>Confirm</th>
-                    <th>Delete</th>
                 </tr>
             `;
 
@@ -260,18 +258,6 @@
                         };
                         confirmCell.appendChild(confirmButton);
                     }
-
-                    // Delete Button
-                    const deleteCell = row.insertCell(7);
-                    const deleteButton = document.createElement('button');
-                    deleteButton.innerText = 'Delete';
-                    deleteButton.onclick = async () => {
-                        if (confirm('Are you sure you want to delete this appointment?')) {
-                            await deleteDoc(doc(viervenDb, 'appointments', doc.id));
-                            loadAppointments();
-                        }
-                    };
-                    deleteCell.appendChild(deleteButton);
                 });
             } catch (error) {
                 console.error("Error loading appointments:", error);
