@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fullscreen Image with Custom Cursor</title>
+    <style>
+        /* Ensure the HTML and body elements take up the full viewport height */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* Hide scrollbars */
+        }
+
+        /* Style for the container holding the image */
+        .fullscreen-image {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw; /* Full viewport width */
+            height: 100vh; /* Full viewport height */
+            background-color: black; /* Optional: background color for empty space */
+            position: relative; /* Relative position for the custom cursor */
+        }
+
+        /* Style for the image to scale while maintaining its aspect ratio */
+        .fullscreen-image img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        /* Style for the custom cursor element */
+        .custom-cursor {
+            position: absolute;
+            width: 250px; /* Width of the cursor box */
+            height: 50px; /* Height of the cursor box */
+            background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+            color: #fff; /* White text */
+            border-radius: 5px; /* Rounded corners */
+            text-align: center;
+            line-height: 50px; /* Center text vertically */
+            pointer-events: none; /* Ensure it doesn't interfere with clicks */
+            display: none; /* Hidden by default */
+            z-index: 9999; /* Ensure it stays on top */
+        }
+    </style>
+</head>
+<body>
+    <div class="fullscreen-image">
+        <img src="Campbell.png" alt="Fullscreen Image">
+        <div class="custom-cursor">Click Vierven to schedule</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cursor = document.querySelector('.custom-cursor');
+            const whatsappNumber = '+31684074565'; // Replace with your WhatsApp number
+            const message = 'Hi, I would like to schedule an appointment.';
+
+            document.addEventListener('mousemove', function(e) {
+                cursor.style.display = 'block';
+                cursor.style.left = (e.pageX + 10) + 'px'; // Adjusted for slight offset
+                cursor.style.top = (e.pageY + 10) + 'px'; // Adjusted for slight offset
+            });
+
+            document.addEventListener('mouseleave', function() {
+                cursor.style.display = 'none';
+            });
+
+            // Add click event to the image container
+            document.querySelector('.fullscreen-image').addEventListener('click', function() {
+                window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+            });
+        });
+    </script>
+</body>
+</html>

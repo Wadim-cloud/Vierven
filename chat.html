@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Feature</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        .chat-container {
+            width: 300px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-color: #f9f9f9;
+        }
+        .chat-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .chat-container input, .chat-container textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .chat-container button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #25D366;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .chat-container button:hover {
+            background-color: #1EBE56;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h2>Contact Us</h2>
+        <input type="text" id="name" placeholder="Your Name">
+        <textarea id="message" placeholder="Your Message"></textarea>
+        <button onclick="sendMessage()">Send Message</button>
+    </div>
+
+    <script>
+        function sendMessage() {
+            const name = document.getElementById('name').value;
+            const message = document.getElementById('message').value;
+            const phoneNumber = '+31684074565na'; // Replace with your WhatsApp number
+            
+            if (name && message) {
+                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent('Name: ' + name + '\nMessage: ' + message)}`;
+                window.open(whatsappUrl, '_blank');
+            } else {
+                alert('Please fill in both fields.');
+            }
+        }
+    </script>
+</body>
+</html>
