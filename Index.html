@@ -253,41 +253,35 @@
                         const confirmButton = document.createElement('button');
                         confirmButton.innerText = 'Confirm';
                         confirmButton.onclick = async () => {
-                            await updateDoc(doc(viervenDb, 'appointments', doc.id), { confirmed: true });
-                            loadAppointments();
+                            const appointmentDocRef = doc(viervenDb, 'appointments', doc.id);
+                            await updateDoc(appointmentDocRef, { confirmed: true });
+                            loadAppointments();  // Reload appointments after confirming one
                         };
                         confirmCell.appendChild(confirmButton);
                     }
                 });
             } catch (error) {
-                console.error("Error loading appointments:", error);
+                console.error('Error loading appointments:', error);
             }
         }
 
         async function loadImages() {
             const container = document.getElementById('image-container');
-            container.innerHTML = '';  // Clear previous images
+            container.innerHTML = '';  // Clear the container before loading images
 
             try {
-                const listRef = ref(prosStorage, 'images/');
+                const listRef = ref(prosStorage, 'images');
                 const res = await listAll(listRef);
-
                 res.items.forEach(async (itemRef) => {
                     const url = await getDownloadURL(itemRef);
                     const img = document.createElement('img');
                     img.src = url;
-                    img.alt = 'Uploaded image';
                     container.appendChild(img);
                 });
             } catch (error) {
-                console.error("Error loading images:", error);
+                console.error('Error loading images:', error);
             }
         }
-
-        window.onload = () => {
-            loadAppointments();
-            loadImages();
-        };
     </script>
 </body>
 </html>
