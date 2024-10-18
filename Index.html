@@ -237,8 +237,8 @@
             try {
                 const q = query(collection(viervenDb, 'appointments'), orderBy('start_time'));
                 const snapshot = await getDocs(q);
-                snapshot.forEach(doc => {
-                    const appointment = doc.data();
+                snapshot.forEach(docSnapshot => {
+                    const appointment = docSnapshot.data();
                     const row = table.insertRow();
                     row.insertCell(0).innerText = appointment.title;
                     row.insertCell(1).innerText = appointment.description;
@@ -253,7 +253,7 @@
                         const confirmButton = document.createElement('button');
                         confirmButton.innerText = 'Confirm';
                         confirmButton.onclick = async () => {
-                            const appointmentDocRef = doc(viervenDb, 'appointments', doc.id);
+                            const appointmentDocRef = doc(viervenDb, 'appointments', docSnapshot.id); // Use docSnapshot.id for the correct document ID
                             await updateDoc(appointmentDocRef, { confirmed: true });
                             loadAppointments();  // Reload appointments after confirming one
                         };
@@ -282,6 +282,11 @@
                 console.error('Error loading images:', error);
             }
         }
+
+        window.onload = () => {
+            loadAppointments();
+            loadImages();
+        };
     </script>
 </body>
 </html>
